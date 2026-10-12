@@ -50,8 +50,8 @@
         <div class="form-group" style="grid-column: span 2;"><label>เลข Ticket</label><input type="text" id="ticketNo" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')"></div>
         <div class="form-group"><label>Server IP</label><input type="text" id="serverIp" class="required-field" placeholder="122.155.12.70" inputmode="decimal" oninput="this.value = this.value.replace(/[^0-9.]/g, '')"></div>
         <div class="form-group"><label>Server Name</label><input type="text" id="serverName" placeholder="Onetrack"></div>
-        <div class="form-group"><label>company id</label><input type="text" id="companyId" class="required-field" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')"></div>
-        <div class="form-group"><label>company name</label><input type="text" id="companyName"></div>
+        <div class="form-group"><label>Company ID</label><input type="text" id="companyId" class="required-field" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')"></div>
+        <div class="form-group"><label>Company Name</label><input type="text" id="companyName"></div>
         <div class="form-group"><label>User name</label><input type="text" id="userName"></div>
         <div class="form-group"><label>Password</label><input type="text" id="password"></div>
         <div class="form-group"><label>ชื่อระบบ</label><input type="text" id="systemName"></div>
@@ -63,7 +63,7 @@
     <div class="req-section">
         <div style="font-size: 15px; font-weight: bold; color: var(--primary);">ข้อมูลวันที่และรถที่ต้องการตรวจสอบ</div>
         <div class="req-inputs">
-            <input type="text" id="mid" placeholder="MID (เว้นว่างไว้หากต้องการดึงข้อมูลทั้งบริษัท)" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+            <input type="text" id="mid" placeholder="MID เช่น 1111, 2222 (เว้นว่างไว้หากต้องการดึงทั้งบริษัท)" inputmode="text" oninput="this.value = this.value.replace(/[^0-9,;\s]/g, '')">
             <input type="text" id="start" class="required-field date-input" placeholder="dd/mm/yyyy (วันที่เริ่มต้น)">
             <input type="text" id="end" class="required-field date-input" placeholder="dd/mm/yyyy (วันที่สิ้นสุด)">
             <button type="button" onclick="addRequest()">+ เพิ่ม</button>
@@ -97,13 +97,24 @@
     let requests = [];
     let lastState = null;
 
+    function parseMids(raw) {
+        if (!raw || !raw.trim()) return ["ALL"];
+        const parts = raw.split(/[,;\s]+/).map(s => s.trim()).filter(Boolean);
+        return parts.length > 0 ? parts : ["ALL"];
+    }
+
     function addRequest() {
-        const mid = document.getElementById('mid').value || "ALL";
+        const midInput = document.getElementById('mid').value;
         const start = document.getElementById('start').value;
         const end = document.getElementById('end').value;
         if(!start || !end) { alert("กรุณาระบุวันที่เริ่มต้นและวันที่สิ้นสุด!"); return; }
         
-        requests.push({ mid, start, end });
+        const mids = parseMids(midInput);
+        mids.forEach(m => {
+            if (!requests.some(r => r.mid === m && r.start === start && r.end === end)) {
+                requests.push({ mid: m, start, end });
+            }
+        });
         renderRequests();
         document.getElementById('mid').value = "";
     }
@@ -181,16 +192,21 @@
         let finalRequests = [...requests];
         const activeStart = document.getElementById('start').value;
         const activeEnd = document.getElementById('end').value;
-        const activeMid = document.getElementById('mid').value || "ALL";
+        const activeMidRaw = document.getElementById('mid').value;
         
         if (activeStart && activeEnd) {
-            finalRequests.push({ mid: activeMid, start: activeStart, end: activeEnd });
+            const activeMids = parseMids(activeMidRaw);
+            activeMids.forEach(m => {
+                if (!finalRequests.some(r => r.mid === m && r.start === activeStart && r.end === activeEnd)) {
+                    finalRequests.push({ mid: m, start: activeStart, end: activeEnd });
+                }
+            });
         }
 
         const hasMid = finalRequests.some(r => r.mid && r.mid.trim() !== "ALL" && r.mid.trim() !== "");
         
         if(!ip || finalRequests.length === 0 || (!compId && !hasMid)) {
-            alert("กรุณาระบุ Server IP, วันที่เริ่มต้น/สิ้นสุด และอย่างน้อย company id หรือ MID!");
+            alert("กรุณาระบุ Server IP, วันที่เริ่มต้น/สิ้นสุด และอย่างน้อย Company ID หรือ MID!");
             return;
         }
 
@@ -199,8 +215,8 @@
         if (ticketNo) txt += `เลข Ticket : ${ticketNo}\n`;
         if (document.getElementById('serverName').value) txt += `Server Name : ${document.getElementById('serverName').value}\n`;
         txt += `Server IP : ${ip}\n`;
-        if (document.getElementById('companyName').value) txt += `company name : ${document.getElementById('companyName').value}\n`;
-        if (compId) txt += `company id : ${compId}\n`;
+        if (document.getElementById('companyName').value) txt += `Company Name : ${document.getElementById('companyName').value}\n`;
+        if (compId) txt += `Company ID : ${compId}\n`;
         if (document.getElementById('userName').value) txt += `User name : ${document.getElementById('userName').value}\n`;
         if (document.getElementById('password').value) txt += `Password : ${document.getElementById('password').value}\n`;
         if (document.getElementById('systemName').value) txt += `ชื่อระบบ : ${document.getElementById('systemName').value}\n`;
@@ -292,7 +308,7 @@
                 link: document.getElementById('link').value,
                 reportName: document.getElementById('reportName').value,
                 details: document.getElementById('details').value,
-                mid: activeMid,
+                mid: activeMidRaw,
                 start: activeStart,
                 end: activeEnd,
                 requests: JSON.parse(JSON.stringify(requests))
