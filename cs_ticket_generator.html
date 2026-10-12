@@ -63,7 +63,7 @@
     <div class="req-section">
         <div style="font-size: 15px; font-weight: bold; color: var(--primary);">ข้อมูลวันที่และรถที่ต้องการตรวจสอบ</div>
         <div class="req-inputs">
-            <input type="text" id="mid" placeholder="MID (เว้นว่างไว้หากต้องการดึงข้อมูลทั้งบริษัท)">
+            <input type="text" id="mid" placeholder="MID (เว้นว่างไว้หากต้องการดึงข้อมูลทั้งบริษัท)" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
             <input type="text" id="start" class="required-field date-input" placeholder="dd/mm/yyyy (วันที่เริ่มต้น)">
             <input type="text" id="end" class="required-field date-input" placeholder="dd/mm/yyyy (วันที่สิ้นสุด)">
             <button type="button" onclick="addRequest()">+ เพิ่ม</button>
@@ -213,9 +213,15 @@
             midGroups[r.mid].push(`${formatDateTH(r.start)} - ${formatDateTH(r.end)}`);
         });
 
+        const hasSpecificMid = finalRequests.some(r => r.mid && r.mid !== "ALL");
         for (const [m, dates] of Object.entries(midGroups)) {
-            if (m !== "ALL") txt += `MID : ${m}\n`;
-            dates.forEach(d => txt += `วันที่ ${d}\n`);
+            if (m !== "ALL") {
+                txt += `MID : ${m}\n`;
+                dates.forEach(d => txt += `วันที่ ${d}\n`);
+            } else if (!hasSpecificMid) {
+                // Only output dates under general company request if no specific MID was requested
+                dates.forEach(d => txt += `วันที่ ${d}\n`);
+            }
         }
 
         if (document.getElementById('reportName').value) txt += `\nระบุชื่อรายงาน ${document.getElementById('reportName').value}\n`;
