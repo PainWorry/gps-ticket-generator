@@ -33,4 +33,4 @@ html_file = Path(__file__).parent / "cs_ticket_generator.html"
 with open(html_file, "r", encoding="utf-8") as f:
     html_content = f.read()
 
-st.components.v1.html(html_content, height=1150, scrolling=True)
+st.components.v1.html(html_content, height=780, scrolling=True)

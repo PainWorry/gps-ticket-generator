@@ -11,10 +11,10 @@
     
     <style>
         :root { --bg: #0f172a; --surface: #1e293b; --primary: #38bdf8; --text: #f8fafc; --text-muted: #94a3b8; --border: #334155; --req: #ef4444; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px 15px; display: flex; justify-content: center; min-height: 100vh; height: auto; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px 15px; height: auto; min-height: auto; box-sizing: border-box; }
         
         /* Compact container to fit in 1 page */
-        .container { background: var(--surface); padding: 16px 22px; border-radius: 12px; width: 100%; max-width: 1200px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; height: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.5); box-sizing: border-box; }
+        .container { background: var(--surface); padding: 16px 22px; border-radius: 12px; width: 100%; max-width: 1200px; margin: 0 auto; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; height: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.5); box-sizing: border-box; }
         
         h3 { margin: 0; color: var(--primary); font-size: 18px; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px 18px; }
@@ -71,7 +71,7 @@
         <div id="reqList"></div>
     </div>
 
-    <div style="display: flex; gap: 10px; margin-top: auto;">
+    <div style="display: flex; gap: 10px; margin-top: 10px;">
         <button onclick="generateTicket()" id="copyBtn" class="gen-btn" style="flex-grow: 1;">สร้างและคัดลอกทิคเก็ต</button>
         <button onclick="undoClear()" id="undoBtn" class="gen-btn" style="display: none; background-color: var(--border); color: var(--text); width: auto; padding: 15px 30px;">ย้อนกลับ</button>
     </div>
