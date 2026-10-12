@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบสร้างทิคเก็ต GPS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Flatpickr for forced dd/mm/yyyy date format -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
+    
+    <style>
+        :root { --bg: #0f172a; --surface: #1e293b; --primary: #38bdf8; --text: #f8fafc; --text-muted: #94a3b8; --border: #334155; --req: #ef4444; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; justify-content: center; height: 100vh; box-sizing: border-box; }
+        
+        /* Expanded container to use more space */
+        .container { background: var(--surface); padding: 30px; border-radius: 12px; width: 100%; max-width: 1200px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 15px; max-height: 100%; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        
+        h3 { margin: 0; color: var(--primary); font-size: 22px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 20px; }
+        .form-group { display: flex; align-items: center; justify-content: space-between; }
+        label { font-size: 14px; font-weight: 500; color: var(--text-muted); width: 130px; flex-shrink: 0; }
+        .req { color: var(--req); font-weight: bold; }
+        
+        input, textarea { flex-grow: 1; padding: 10px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 14px; transition: border 0.2s; }
+        input:focus, textarea:focus { outline: none; border-color: var(--primary); }
+        .required-field { border-left: 4px solid var(--req); }
+        
+        .req-section { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 12px; }
+        .req-inputs { display: flex; gap: 12px; align-items: center; }
+        .req-inputs input { width: 100%; }
+        
+        button { padding: 10px 16px; background: var(--primary); color: #000; border: none; border-radius: 6px; font-weight: 600; font-size: 14px; cursor: pointer; transition: 0.2s; }
+        button:hover { opacity: 0.9; }
+        
+        #reqList { max-height: 150px; overflow-y: auto; font-size: 13px; background: var(--bg); padding: 8px; border-radius: 6px; border: 1px solid var(--border); }
+        .req-item { display: flex; justify-content: space-between; padding: 6px 8px; border-bottom: 1px solid #222; }
+        .delete-btn { color: var(--req); cursor: pointer; font-weight: bold; padding: 0 5px; }
+        
+        .gen-btn { padding: 15px; font-size: 16px; margin-top: auto; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h3>ระบบสร้างทิคเก็ต GPS</h3>
+    <div style="font-size: 14px; color: var(--text-muted); margin-bottom: 10px;">กรุณากรอกข้อมูลด้านล่างเพื่อสร้างทิคเก็ตสำหรับ Dynamics 365</div>
+    
+    <div class="grid">
+        <div class="form-group"><label>Server IP</label><input type="text" id="serverIp" class="required-field" placeholder="122.155.12.70"></div>
+        <div class="form-group"><label>Server Name</label><input type="text" id="serverName" placeholder="Onetrack"></div>
+        <div class="form-group"><label>company id</label><input type="text" id="companyId" class="required-field"></div>
+        <div class="form-group"><label>company name</label><input type="text" id="companyName"></div>
+        <div class="form-group"><label>User name</label><input type="text" id="userName"></div>
+        <div class="form-group"><label>Password</label><input type="text" id="password"></div>
+        <div class="form-group"><label>ชื่อระบบ</label><input type="text" id="systemName"></div>
+        <div class="form-group"><label>link</label><input type="text" id="link"></div>
+        <div class="form-group" style="grid-column: span 2;"><label>ระบุชื่อรายงาน</label><input type="text" id="reportName" placeholder="เช่น รายงานการเดินทาง"></div>
+        <div class="form-group" style="grid-column: span 2;"><label>รายละเอียด</label><textarea id="details" rows="3"></textarea></div>
+    </div>
+
+    <div class="req-section">
+        <div style="font-size: 15px; font-weight: bold; color: var(--primary);">ข้อมูลวันที่และรถที่ต้องการตรวจสอบ</div>
+        <div class="req-inputs">
+            <input type="text" id="mid" placeholder="MID (เว้นว่างไว้หากต้องการดึงข้อมูลทั้งบริษัท)">
+            <input type="text" id="start" class="required-field date-input" placeholder="dd/mm/yyyy (วันที่เริ่มต้น)">
+            <input type="text" id="end" class="required-field date-input" placeholder="dd/mm/yyyy (วันที่สิ้นสุด)">
+            <button type="button" onclick="addRequest()">+ เพิ่ม</button>
+        </div>
+        <div id="reqList"></div>
+    </div>
+
+    <div style="display: flex; gap: 10px; margin-top: auto;">
+        <button onclick="generateTicket()" id="copyBtn" class="gen-btn" style="flex-grow: 1;">สร้างและคัดลอกทิคเก็ต</button>
+        <button onclick="undoClear()" id="undoBtn" class="gen-btn" style="display: none; background-color: var(--border); color: var(--text); width: auto; padding: 15px 30px;">ย้อนกลับ</button>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+    // Force dd/mm/yyyy and strictly prevent future dates using Flatpickr
+    flatpickr(".date-input", {
+        dateFormat: "d/m/Y",
+        maxDate: "today",
+        allowInput: true
+    });
+
+    let requests = [];
+    let lastState = null;
+
+    function addRequest() {
+        const mid = document.getElementById('mid').value || "ALL";
+        const start = document.getElementById('start').value;
+        const end = document.getElementById('end').value;
+        if(!start || !end) { alert("กรุณาระบุวันที่เริ่มต้นและวันที่สิ้นสุด!"); return; }
+        
+        requests.push({ mid, start, end });
+        renderRequests();
+        document.getElementById('mid').value = "";
+    }
+
+    function removeRequest(index) {
+        requests.splice(index, 1);
+        renderRequests();
+    }
+
+    function renderRequests() {
+        const list = document.getElementById('reqList');
+        list.innerHTML = requests.map((r, i) => {
+            return `<div class="req-item"><span>MID: ${r.mid} | วันที่: ${r.start} ถึง ${r.end}</span><span class="delete-btn" onclick="removeRequest(${i})">X ลบ</span></div>`;
+        }).join('');
+    }
+
+    // Remove Buddhist year conversion, keep Christian year
+    function formatDateTH(dateStr) {
+        if (!dateStr) return "";
+        const parts = dateStr.split('/');
+        const day = parts[0];
+        const month = parts[1];
+        const year = parts[2]; // No +543 conversion
+        return `${day}/${month}/${year}`;
+    }
+
+    // Convert dd/mm/yyyy to standard Christian YYYY-MM-DD for JSON payload
+    function parseDateToISO(dateStr) {
+        const parts = dateStr.split('/');
+        return `${parts[2]}-${parts[1]}-${parts[0]}`;
+    }
+
+    function undoClear() {
+        if(!lastState) return;
+        
+        // Restore inputs
+        document.getElementById('serverIp').value = lastState.serverIp;
+        document.getElementById('serverName').value = lastState.serverName;
+        document.getElementById('companyId').value = lastState.companyId;
+        document.getElementById('companyName').value = lastState.companyName;
+        document.getElementById('userName').value = lastState.userName;
+        document.getElementById('password').value = lastState.password;
+        document.getElementById('systemName').value = lastState.systemName;
+        document.getElementById('link').value = lastState.link;
+        document.getElementById('reportName').value = lastState.reportName;
+        document.getElementById('details').value = lastState.details;
+        
+        // Restore date text boxes
+        document.getElementById('mid').value = lastState.mid === "ALL" ? "" : lastState.mid;
+        
+        const startInput = document.getElementById('start');
+        const endInput = document.getElementById('end');
+        startInput.value = lastState.start;
+        endInput.value = lastState.end;
+        
+        if (startInput._flatpickr) startInput._flatpickr.setDate(lastState.start);
+        if (endInput._flatpickr) endInput._flatpickr.setDate(lastState.end);
+        
+        // Restore requests
+        requests = JSON.parse(JSON.stringify(lastState.requests));
+        renderRequests();
+        
+        // Hide Undo Button
+        document.getElementById('undoBtn').style.display = "none";
+    }
+
+    function generateTicket() {
+        const ip = document.getElementById('serverIp').value;
+        const compId = document.getElementById('companyId').value;
+        
+        // Auto-add whatever is in the text boxes if they forgot to click '+ เพิ่ม'
+        let finalRequests = [...requests];
+        const activeStart = document.getElementById('start').value;
+        const activeEnd = document.getElementById('end').value;
+        const activeMid = document.getElementById('mid').value || "ALL";
+        
+        if (activeStart && activeEnd) {
+            finalRequests.push({ mid: activeMid, start: activeStart, end: activeEnd });
+        }
+
+        const hasMid = finalRequests.some(r => r.mid && r.mid.trim() !== "ALL" && r.mid.trim() !== "");
+        
+        if(!ip || finalRequests.length === 0 || (!compId && !hasMid)) {
+            alert("กรุณาระบุ Server IP, วันที่เริ่มต้น/สิ้นสุด และอย่างน้อย company id หรือ MID!");
+            return;
+        }
+
+        let txt = `รายละเอียด\n`;
+        if (document.getElementById('serverName').value) txt += `Server Name : ${document.getElementById('serverName').value}\n`;
+        txt += `Server IP : ${ip}\n`;
+        if (document.getElementById('companyName').value) txt += `company name : ${document.getElementById('companyName').value}\n`;
+        if (compId) txt += `company id : ${compId}\n`;
+        if (document.getElementById('userName').value) txt += `User name : ${document.getElementById('userName').value}\n`;
+        if (document.getElementById('password').value) txt += `Password : ${document.getElementById('password').value}\n`;
+        if (document.getElementById('systemName').value) txt += `ชื่อระบบ : ${document.getElementById('systemName').value}\n`;
+        if (document.getElementById('link').value) txt += `link : ${document.getElementById('link').value}\n`;
+        if (document.getElementById('details').value) txt += `รายละเอียด : ${document.getElementById('details').value}\n\n`;
+        
+        const midGroups = {};
+        finalRequests.forEach(r => {
+            if(!midGroups[r.mid]) midGroups[r.mid] = [];
+            midGroups[r.mid].push(`${formatDateTH(r.start)} - ${formatDateTH(r.end)}`);
+        });
+
+        for (const [m, dates] of Object.entries(midGroups)) {
+            if (m !== "ALL") txt += `MID : ${m}\n`;
+            dates.forEach(d => txt += `วันที่ ${d}\n`);
+        }
+
+        if (document.getElementById('reportName').value) txt += `\nระบุชื่อรายงาน ${document.getElementById('reportName').value}\n`;
+
+        // Format for JSON backend
+        const formattedRequests = finalRequests.map(r => ({
+            mid: r.mid,
+            start: parseDateToISO(r.start),
+            end: parseDateToISO(r.end)
+        }));
+
+        const payload = { ip, company_id: compId, requests: formattedRequests };
+        txt += `\n\n[SYSTEM_DATA]\n${JSON.stringify(payload)}\n[/SYSTEM_DATA]`;
+
+        navigator.clipboard.writeText(txt).then(() => {
+            const btn = document.getElementById('copyBtn');
+            btn.innerText = "คัดลอกสำเร็จ!";
+            btn.style.backgroundColor = "#4ade80";
+            
+            // Save state for undo
+            lastState = {
+                serverIp: ip,
+                serverName: document.getElementById('serverName').value,
+                companyId: compId,
+                companyName: document.getElementById('companyName').value,
+                userName: document.getElementById('userName').value,
+                password: document.getElementById('password').value,
+                systemName: document.getElementById('systemName').value,
+                link: document.getElementById('link').value,
+                reportName: document.getElementById('reportName').value,
+                details: document.getElementById('details').value,
+                mid: activeMid,
+                start: activeStart,
+                end: activeEnd,
+                requests: JSON.parse(JSON.stringify(requests))
+            };
+            
+            // Clear Form
+            document.querySelectorAll('input, textarea').forEach(el => el.value = '');
+            requests = [];
+            renderRequests();
+            
+            // Show Undo Button
+            document.getElementById('undoBtn').style.display = "block";
+            
+            setTimeout(() => { btn.innerText = "สร้างและคัดลอกทิคเก็ต"; btn.style.backgroundColor = "var(--primary)"; }, 3000);
+        });
+    }
+</script>
+</body>
+</html>
