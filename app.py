@@ -59,7 +59,7 @@ with st.container():
         link = st.text_input("Link", key="link")
 
     report_name = st.text_input("ระบุชื่อรายงาน", placeholder="เช่น รายงานการเดินทาง", key="report_name")
-    details = st.text_area("รายละเอียด", rows=3, key="details")
+    details = st.text_area("รายละเอียด", height=100, key="details")
 
 st.markdown('<div class="section-header">ข้อมูลวันที่และรถที่ต้องการตรวจสอบ</div>', unsafe_allow_html=True)
 
