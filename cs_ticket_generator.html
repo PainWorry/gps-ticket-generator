@@ -11,10 +11,10 @@
     
     <style>
         :root { --bg: #0f172a; --surface: #1e293b; --primary: #38bdf8; --text: #f8fafc; --text-muted: #94a3b8; --border: #334155; --req: #ef4444; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; justify-content: center; height: 100vh; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; justify-content: center; min-height: 100vh; height: auto; box-sizing: border-box; }
         
         /* Expanded container to use more space */
-        .container { background: var(--surface); padding: 30px; border-radius: 12px; width: 100%; max-width: 1200px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 15px; max-height: 100%; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .container { background: var(--surface); padding: 30px; border-radius: 12px; width: 100%; max-width: 1200px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 15px; height: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.5); box-sizing: border-box; }
         
         h3 { margin: 0; color: var(--primary); font-size: 22px; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 20px; }
@@ -73,6 +73,14 @@
     <div style="display: flex; gap: 10px; margin-top: auto;">
         <button onclick="generateTicket()" id="copyBtn" class="gen-btn" style="flex-grow: 1;">สร้างและคัดลอกทิคเก็ต</button>
         <button onclick="undoClear()" id="undoBtn" class="gen-btn" style="display: none; background-color: var(--border); color: var(--text); width: auto; padding: 15px 30px;">ย้อนกลับ</button>
+    </div>
+
+    <div id="previewSection" style="display: none; margin-top: 15px; border-top: 1px solid var(--border); padding-top: 15px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div style="font-size: 15px; font-weight: bold; color: var(--primary);">ผลลัพธ์ทิคเก็ต (Ticket Result Preview)</div>
+            <span style="font-size: 12px; color: #4ade80; font-weight: 500;">คัดลอกลง Clipboard เรียบร้อยแล้ว</span>
+        </div>
+        <textarea id="previewBox" rows="12" readonly style="width: 100%; box-sizing: border-box; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); padding: 12px; font-family: monospace; font-size: 13px; line-height: 1.5; resize: vertical;"></textarea>
     </div>
 </div>
 
@@ -159,6 +167,8 @@
         
         // Hide Undo Button
         document.getElementById('undoBtn').style.display = "none";
+        // Hide Preview Section
+        document.getElementById('previewSection').style.display = "none";
     }
 
     function generateTicket() {
@@ -216,11 +226,49 @@
         const payload = { ip, company_id: compId, requests: formattedRequests };
         txt += `\n\n[SYSTEM_DATA]\n${JSON.stringify(payload)}\n[/SYSTEM_DATA]`;
 
-        navigator.clipboard.writeText(txt).then(() => {
+        function copyText(str) {
+            try {
+                if (window.parent && window.parent.navigator && window.parent.navigator.clipboard) {
+                    return window.parent.navigator.clipboard.writeText(str).catch(() => copyFallback(str));
+                }
+            } catch(e) {}
+
+            if (navigator.clipboard && window.isSecureContext) {
+                return navigator.clipboard.writeText(str).catch(() => copyFallback(str));
+            }
+            return copyFallback(str);
+        }
+
+        function copyFallback(str) {
+            const ta = document.createElement("textarea");
+            ta.value = str;
+            ta.style.position = "fixed";
+            ta.style.left = "-9999px";
+            ta.style.top = "-9999px";
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            try {
+                document.execCommand('copy');
+            } catch (err) {
+                console.error("execCommand copy error", err);
+            }
+            document.body.removeChild(ta);
+            return Promise.resolve();
+        }
+
+        copyText(txt).then(() => {
             const btn = document.getElementById('copyBtn');
             btn.innerText = "คัดลอกสำเร็จ!";
             btn.style.backgroundColor = "#4ade80";
             
+            // Show preview
+            const previewBox = document.getElementById('previewBox');
+            if (previewBox) {
+                previewBox.value = txt;
+                document.getElementById('previewSection').style.display = "block";
+            }
+
             // Save state for undo
             lastState = {
                 serverIp: ip,
@@ -239,8 +287,10 @@
                 requests: JSON.parse(JSON.stringify(requests))
             };
             
-            // Clear Form
-            document.querySelectorAll('input, textarea').forEach(el => el.value = '');
+            // Clear Form (exclude previewBox)
+            document.querySelectorAll('input, textarea').forEach(el => {
+                if (el.id !== 'previewBox') el.value = '';
+            });
             requests = [];
             renderRequests();
             
