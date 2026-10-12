@@ -47,10 +47,10 @@
     <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 6px;">กรุณากรอกข้อมูลด้านล่างเพื่อสร้างทิคเก็ตสำหรับ Dynamics 365</div>
     
     <div class="grid">
-        <div class="form-group" style="grid-column: span 2;"><label>เลข Ticket</label><input type="text" id="ticketNo"></div>
-        <div class="form-group"><label>Server IP</label><input type="text" id="serverIp" class="required-field" placeholder="122.155.12.70"></div>
+        <div class="form-group" style="grid-column: span 2;"><label>เลข Ticket</label><input type="text" id="ticketNo" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')"></div>
+        <div class="form-group"><label>Server IP</label><input type="text" id="serverIp" class="required-field" placeholder="122.155.12.70" inputmode="decimal" oninput="this.value = this.value.replace(/[^0-9.]/g, '')"></div>
         <div class="form-group"><label>Server Name</label><input type="text" id="serverName" placeholder="Onetrack"></div>
-        <div class="form-group"><label>company id</label><input type="text" id="companyId" class="required-field"></div>
+        <div class="form-group"><label>company id</label><input type="text" id="companyId" class="required-field" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')"></div>
         <div class="form-group"><label>company name</label><input type="text" id="companyName"></div>
         <div class="form-group"><label>User name</label><input type="text" id="userName"></div>
         <div class="form-group"><label>Password</label><input type="text" id="password"></div>
