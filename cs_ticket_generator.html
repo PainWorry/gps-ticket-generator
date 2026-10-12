@@ -11,42 +11,43 @@
     
     <style>
         :root { --bg: #0f172a; --surface: #1e293b; --primary: #38bdf8; --text: #f8fafc; --text-muted: #94a3b8; --border: #334155; --req: #ef4444; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; justify-content: center; min-height: 100vh; height: auto; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px 15px; display: flex; justify-content: center; min-height: 100vh; height: auto; box-sizing: border-box; }
         
-        /* Expanded container to use more space */
-        .container { background: var(--surface); padding: 30px; border-radius: 12px; width: 100%; max-width: 1200px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 15px; height: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.5); box-sizing: border-box; }
+        /* Compact container to fit in 1 page */
+        .container { background: var(--surface); padding: 16px 22px; border-radius: 12px; width: 100%; max-width: 1200px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; height: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.5); box-sizing: border-box; }
         
-        h3 { margin: 0; color: var(--primary); font-size: 22px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 20px; }
+        h3 { margin: 0; color: var(--primary); font-size: 18px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px 18px; }
         .form-group { display: flex; align-items: center; justify-content: space-between; }
-        label { font-size: 14px; font-weight: 500; color: var(--text-muted); width: 130px; flex-shrink: 0; }
+        label { font-size: 13px; font-weight: 500; color: var(--text-muted); width: 110px; flex-shrink: 0; }
         .req { color: var(--req); font-weight: bold; }
         
-        input, textarea { flex-grow: 1; padding: 10px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 14px; transition: border 0.2s; }
+        input, textarea { flex-grow: 1; padding: 6px 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 13px; transition: border 0.2s; }
         input:focus, textarea:focus { outline: none; border-color: var(--primary); }
         .required-field { border-left: 4px solid var(--req); }
         
-        .req-section { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 12px; }
-        .req-inputs { display: flex; gap: 12px; align-items: center; }
+        .req-section { background: rgba(0,0,0,0.2); padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
+        .req-inputs { display: flex; gap: 10px; align-items: center; }
         .req-inputs input { width: 100%; }
         
-        button { padding: 10px 16px; background: var(--primary); color: #000; border: none; border-radius: 6px; font-weight: 600; font-size: 14px; cursor: pointer; transition: 0.2s; }
+        button { padding: 7px 14px; background: var(--primary); color: #000; border: none; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; transition: 0.2s; }
         button:hover { opacity: 0.9; }
         
-        #reqList { max-height: 150px; overflow-y: auto; font-size: 13px; background: var(--bg); padding: 8px; border-radius: 6px; border: 1px solid var(--border); }
-        .req-item { display: flex; justify-content: space-between; padding: 6px 8px; border-bottom: 1px solid #222; }
+        #reqList { max-height: 100px; overflow-y: auto; font-size: 12px; background: var(--bg); padding: 6px; border-radius: 6px; border: 1px solid var(--border); }
+        .req-item { display: flex; justify-content: space-between; padding: 4px 6px; border-bottom: 1px solid #222; }
         .delete-btn { color: var(--req); cursor: pointer; font-weight: bold; padding: 0 5px; }
         
-        .gen-btn { padding: 15px; font-size: 16px; margin-top: auto; }
+        .gen-btn { padding: 10px; font-size: 15px; margin-top: 4px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h3>ระบบสร้างทิคเก็ต GPS</h3>
-    <div style="font-size: 14px; color: var(--text-muted); margin-bottom: 10px;">กรุณากรอกข้อมูลด้านล่างเพื่อสร้างทิคเก็ตสำหรับ Dynamics 365</div>
+    <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 6px;">กรุณากรอกข้อมูลด้านล่างเพื่อสร้างทิคเก็ตสำหรับ Dynamics 365</div>
     
     <div class="grid">
+        <div class="form-group" style="grid-column: span 2;"><label>เลข Ticket</label><input type="text" id="ticketNo" placeholder="เช่น CAS-12345-XXXX"></div>
         <div class="form-group"><label>Server IP</label><input type="text" id="serverIp" class="required-field" placeholder="122.155.12.70"></div>
         <div class="form-group"><label>Server Name</label><input type="text" id="serverName" placeholder="Onetrack"></div>
         <div class="form-group"><label>company id</label><input type="text" id="companyId" class="required-field"></div>
@@ -56,7 +57,7 @@
         <div class="form-group"><label>ชื่อระบบ</label><input type="text" id="systemName"></div>
         <div class="form-group"><label>link</label><input type="text" id="link"></div>
         <div class="form-group" style="grid-column: span 2;"><label>ระบุชื่อรายงาน</label><input type="text" id="reportName" placeholder="เช่น รายงานการเดินทาง"></div>
-        <div class="form-group" style="grid-column: span 2;"><label>รายละเอียด</label><textarea id="details" rows="3"></textarea></div>
+        <div class="form-group" style="grid-column: span 2;"><label>รายละเอียด</label><textarea id="details" rows="2"></textarea></div>
     </div>
 
     <div class="req-section">
@@ -139,6 +140,7 @@
         if(!lastState) return;
         
         // Restore inputs
+        document.getElementById('ticketNo').value = lastState.ticketNo || '';
         document.getElementById('serverIp').value = lastState.serverIp;
         document.getElementById('serverName').value = lastState.serverName;
         document.getElementById('companyId').value = lastState.companyId;
@@ -193,6 +195,8 @@
         }
 
         let txt = `รายละเอียด\n`;
+        const ticketNo = document.getElementById('ticketNo').value.trim();
+        if (ticketNo) txt += `เลข Ticket : ${ticketNo}\n`;
         if (document.getElementById('serverName').value) txt += `Server Name : ${document.getElementById('serverName').value}\n`;
         txt += `Server IP : ${ip}\n`;
         if (document.getElementById('companyName').value) txt += `company name : ${document.getElementById('companyName').value}\n`;
@@ -223,7 +227,7 @@
             end: parseDateToISO(r.end)
         }));
 
-        const payload = { ip, company_id: compId, requests: formattedRequests };
+        const payload = { ticket_no: ticketNo || undefined, ip, company_id: compId, requests: formattedRequests };
         txt += `\n\n[SYSTEM_DATA]\n${JSON.stringify(payload)}\n[/SYSTEM_DATA]`;
 
         function copyText(str) {
@@ -271,6 +275,7 @@
 
             // Save state for undo
             lastState = {
+                ticketNo: document.getElementById('ticketNo').value,
                 serverIp: ip,
                 serverName: document.getElementById('serverName').value,
                 companyId: compId,
